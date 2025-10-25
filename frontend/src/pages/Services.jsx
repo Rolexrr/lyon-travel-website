@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plane, Car, MapPin, Compass, CheckCircle, Tag } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
-import { services, cars, promotions } from '../data/mock';
+import { services, cars } from '../data/mock';
 import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/button';
+import { getPromotions } from '../services/api';
 
 const iconMap = {
   Plane,
@@ -14,7 +15,25 @@ const iconMap = {
 };
 
 const Services = () => {
-  const activePromotions = promotions.filter(p => p.active);
+  const [promotions, setPromotions] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPromotions = async () => {
+      try {
+        const data = await getPromotions();
+        setPromotions(data.filter(p => p.active));
+      } catch (error) {
+        console.error('Error fetching promotions:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPromotions();
+  }, []);
+
+  const activePromotions = promotions;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
