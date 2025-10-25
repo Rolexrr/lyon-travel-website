@@ -128,41 +128,55 @@ const AdminDashboard = () => {
     setIsPromoDialogOpen(true);
   };
 
-  const handleSavePromotion = () => {
+  const handleSavePromotion = async () => {
     if (!promoFormData.title || !promoFormData.serviceId || !promoFormData.validUntil) {
       toast.error('Veuillez remplir tous les champs obligatoires');
       return;
     }
 
-    if (editingPromo) {
-      setPromotions(promotions.map(p => 
-        p.id === editingPromo.id 
-          ? { ...editingPromo, ...promoFormData, serviceId: parseInt(promoFormData.serviceId) }
-          : p
-      ));
-      toast.success('Promotion modifiée');
-    } else {
-      const newPromo = {
-        id: Date.now(),
+    try {
+      const dataToSend = {
         ...promoFormData,
         serviceId: parseInt(promoFormData.serviceId)
       };
-      setPromotions([...promotions, newPromo]);
-      toast.success('Promotion ajoutée');
+
+      if (editingPromo) {
+        const updated = await updatePromotion(editingPromo.id, dataToSend);
+        setPromotions(promotions.map(p => p.id === editingPromo.id ? updated : p));
+        toast.success('Promotion modifiée');
+      } else {
+        const newPromo = await createPromotion(dataToSend);
+        setPromotions([...promotions, newPromo]);
+        toast.success('Promotion ajoutée');
+      }
+      setIsPromoDialogOpen(false);
+    } catch (error) {
+      console.error('Error saving promotion:', error);
+      toast.error('Erreur lors de l\'enregistrement');
     }
-    setIsPromoDialogOpen(false);
   };
 
-  const handleDeletePromotion = (id) => {
-    setPromotions(promotions.filter(p => p.id !== id));
-    toast.success('Promotion supprimée');
+  const handleDeletePromotion = async (id) => {
+    try {
+      await deletePromotion(id);
+      setPromotions(promotions.filter(p => p.id !== id));
+      toast.success('Promotion supprimée');
+    } catch (error) {
+      console.error('Error deleting promotion:', error);
+      toast.error('Erreur lors de la suppression');
+    }
   };
 
-  const handleTogglePromoStatus = (id) => {
-    setPromotions(promotions.map(p => 
-      p.id === id ? { ...p, active: !p.active } : p
-    ));
-    toast.success('Statut de la promotion mis à jour');
+  const handleTogglePromoStatus = async (id) => {
+    try {
+      const promo = promotions.find(p => p.id === id);
+      const updated = await updatePromotion(id, { active: !promo.active });
+      setPromotions(promotions.map(p => p.id === id ? updated : p));
+      toast.success('Statut de la promotion mis à jour');
+    } catch (error) {
+      console.error('Error toggling promo status:', error);
+      toast.error('Erreur lors de la mise à jour');
+    }
   };
 
   return (
