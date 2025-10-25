@@ -15,15 +15,18 @@ const AdminLogin = () => {
     password: ''
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Mock authentication
-    if (formData.email === adminUser.email && formData.password === adminUser.password) {
+    try {
+      const { login } = await import('../services/api');
+      const response = await login(formData);
+      
       toast.success('Connexion réussie !');
       localStorage.setItem('adminAuth', 'true');
       navigate('/admin-dashboard');
-    } else {
+    } catch (error) {
+      console.error('Login error:', error);
       toast.error('Email ou mot de passe incorrect');
     }
   };
