@@ -21,7 +21,7 @@ import {
   Clock
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { reservations as mockReservations, promotions as mockPromotions, services } from '../data/mock';
+import { services } from '../data/mock';
 import {
   Dialog,
   DialogContent,
@@ -29,6 +29,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '../components/ui/dialog';
+import {
+  getReservations,
+  deleteReservation,
+  getPromotions,
+  createPromotion,
+  updatePromotion,
+  deletePromotion,
+  logout as apiLogout
+} from '../services/api';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
