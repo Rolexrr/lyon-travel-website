@@ -42,8 +42,9 @@ import {
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('reservations');
-  const [reservations, setReservations] = useState(mockReservations);
-  const [promotions, setPromotions] = useState(mockPromotions);
+  const [reservations, setReservations] = useState([]);
+  const [promotions, setPromotions] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [isPromoDialogOpen, setIsPromoDialogOpen] = useState(false);
   const [editingPromo, setEditingPromo] = useState(null);
   const [promoFormData, setPromoFormData] = useState({
@@ -59,18 +60,46 @@ const AdminDashboard = () => {
     const isAuth = localStorage.getItem('adminAuth');
     if (!isAuth) {
       navigate('/admin-login');
+    } else {
+      fetchData();
     }
   }, [navigate]);
 
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const [reservationsData, promotionsData] = await Promise.all([
+        getReservations(),
+        getPromotions()
+      ]);
+      setReservations(reservationsData);
+      setPromotions(promotionsData);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      if (error.detail === 'Invalid authentication credentials') {
+        toast.error('Session expirée. Veuillez vous reconnecter.');
+        handleLogout();
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleLogout = () => {
-    localStorage.removeItem('adminAuth');
+    apiLogout();
     toast.success('Déconnexion réussie');
     navigate('/admin-login');
   };
 
-  const handleDeleteReservation = (id) => {
-    setReservations(reservations.filter(r => r.id !== id));
-    toast.success('Demande supprimée');
+  const handleDeleteReservation = async (id) => {
+    try {
+      await deleteReservation(id);
+      setReservations(reservations.filter(r => r.id !== id));
+      toast.success('Demande supprimée');
+    } catch (error) {
+      console.error('Error deleting reservation:', error);
+      toast.error('Erreur lors de la suppression');
+    }
   };
 
   const handleAddPromotion = () => {
