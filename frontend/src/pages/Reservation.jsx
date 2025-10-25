@@ -24,21 +24,29 @@ const Reservation = () => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Mock submission
-    console.log('Form submitted:', formData);
-    toast.success('Votre demande a été envoyée avec succès ! Nous vous contactons rapidement.');
-    // Reset form
-    setFormData({
-      name: '',
-      email: '',
-      phone: '',
-      service: '',
-      destination: '',
-      date: '',
-      message: ''
-    });
+    
+    try {
+      const { createReservation } = await import('../services/api');
+      await createReservation(formData);
+      
+      toast.success('Votre demande a été envoyée avec succès ! Nous vous contactons rapidement.');
+      
+      // Reset form
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        service: '',
+        destination: '',
+        date: '',
+        message: ''
+      });
+    } catch (error) {
+      console.error('Error submitting reservation:', error);
+      toast.error('Une erreur est survenue. Veuillez réessayer.');
+    }
   };
 
   return (
